@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 Created on Tue Dec  1 13:20:39 2015
-So we somehow managed to lose the version where we actually got cltk working
-NBD, I guess.  Key to the fix was to build the parts of cltk_data that you need
+Fixed the trouble with cltk. Key to the fix was to build the parts of cltk_data that you need
 manually. Most can be found on github.
-Also OMFG, the CLTK guys let a right howler through.  Their lemmatizer labels
+Also a manual fix for one issue with cltk lemmatizer: it labels
 sum, es, et etc. as 'sum1', but their stopword list only includes 'sum'-- no wonder
 I was getting like twelve million hits when I look a 6 shingles with an
 intersection >3
@@ -45,7 +44,7 @@ bgs.extend([('patro','conscribo'),('populus1','Romanus'),('senatus','consulo'),(
 #lsent=TokenizeSentence('latin')
 #lst.tokenize()=lsent.tokenize_sentences
 #cltk's sentence tokenizer won't play nicely with nltk's corpus reader.  I
-#could fix it, but it isn't worth the bother
+#could fix it, but it isn't worth the bother right now
 from cltk.tokenize.word import WordTokenizer
 lword=WordTokenizer('latin')
 from cltk.stem.lemma import LemmaReplacer
@@ -251,8 +250,7 @@ def PartTag(pal):
     This one is odd because they seem to double mark participles.  They get a 't'
     at the start of the tag, then also a 'p' indicating that the mood is participial.
     I assume they wanted to be able to collect all verb forms by checking to see
-    if it had a letter in position 5 ( index 4)?  But they could just have left
-    them as verbs then. This bothers me.
+    if it had a letter in position 5 ( index 4)?  
     """
     if pal[2]=='perf':
         tense='r'
@@ -662,70 +660,72 @@ def MatchInRangeConcordance(reob,key,sents,distBefore=3,distAfter=3):
 def ListForHuman(sent):
     return(' '.join(w+' ' for w in sent))
 
+###############################################################
+#an actual project
+##############################################################
+# domo=nltk.corpus.PlaintextCorpusReader(path,'domo.txt')
 
-domo=nltk.corpus.PlaintextCorpusReader(path,'domo.txt')
+# vobis=re.compile('^tu$|^tui$|^te$|^tibi$|^vos$|^vobis|^vestr')
+# hic=re.compile('^hic$|haec|hoc|huius|hunc|hanc|huic|^hac$|^hi$|^hae$|haec|horum|harum|^hos$|^has$|^his$',re.I)
 
-vobis=re.compile('^tu$|^tui$|^te$|^tibi$|^vos$|^vobis|^vestr')
-hic=re.compile('^hic$|haec|hoc|huius|hunc|hanc|huic|^hac$|^hi$|^hae$|haec|horum|harum|^hos$|^has$|^his$',re.I)
+# dom1=stableConcordance('etiam',domo.sents())
+# dom2=MatchInRangeConcordance(vobis,'etiam',dom1)
+# dom3=MatchInRangeConcordance(hic,vobis,dom2,4,4)
 
-dom1=stableConcordance('etiam',domo.sents())
-dom2=MatchInRangeConcordance(vobis,'etiam',dom1)
-dom3=MatchInRangeConcordance(hic,vobis,dom2,4,4)
+# allcic=nltk.corpus.PlaintextCorpusReader(path,'.*.txt')
 
-allcic=nltk.corpus.PlaintextCorpusReader(path,'.*.txt')
-
-jupregex=re.compile('Jup|Jov|Iup|Iov')
-jupc=partialmatchConcordance(jupregex,allcic.sents())
+# jupregex=re.compile('Jup|Jov|Iup|Iov')
+# jupc=partialmatchConcordance(jupregex,allcic.sents())
     
 
-prsEdges=makeEdgeListNOCbigrams(cat3,prh[0:140],'Cat3','PostRSen')
+# prsEdges=makeEdgeListNOCbigrams(cat3,prh[0:140],'Cat3','PostRSen')
 
-prsEdges.to_csv('prs_edgematrix.csv')
+# prsEdges.to_csv('prs_edgematrix.csv')
 
-prqEdges=makeEdgeListNOCbigrams(cat3,prh[141:221],'Cat3','PostRQui')
+# prqEdges=makeEdgeListNOCbigrams(cat3,prh[141:221],'Cat3','PostRQui')
 
-harEdges=makeEdgeListNOCbigrams(cat3,prh[221:544],'Cat3','Haruspicum')
+# harEdges=makeEdgeListNOCbigrams(cat3,prh[221:544],'Cat3','Haruspicum')
 
-harEdges.to_csv('har_edgematrix.csv')
+# harEdges.to_csv('har_edgematrix.csv')
 
-prqEdges.to_csv('prq_edgematrix.csv')
+# prqEdges.to_csv('prq_edgematrix.csv')
 
-DDEdges=makeEdgeListNOCbigrams(cat3,prh[545:],'Cat3','DeDomo')
+# DDEdges=makeEdgeListNOCbigrams(cat3,prh[545:],'Cat3','DeDomo')
 
-DDEdges.to_csv('dd_edgematrix.csv')
+# DDEdges.to_csv('dd_edgematrix.csv')
 
 
 
 #cleaning up the edge lists by finding more bigrams
 
-with open('cat3Heavy.pickle','rb') as f:
-    cat3=pickle.load(f)
+# with open('cat3Heavy.pickle','rb') as f:
+#     cat3=pickle.load(f)
 
-with open('PostReditumHeavy.pickle','rb') as f:
-    prh=pickle.load(f)
+# with open('PostReditumHeavy.pickle','rb') as f:
+#     prh=pickle.load(f)
 
-with open('cat124Heavy.pickle','rb') as f:
-    cat124=pickle.load(f)
+# with open('cat124Heavy.pickle','rb') as f:
+#     cat124=pickle.load(f)
     
-allcat=cat124[:309]
-allcat.extend(cat3)
-allcat.extend(cat124[310:])
+# allcat=cat124[:309]
+# allcat.extend(cat3)
+# allcat.extend(cat124[310:])
 
-prh=[s[0] for s in prh]
-allcat=[s[0] for s in allcat]
+# prh=[s[0] for s in prh]
+# allcat=[s[0] for s in allcat]
 
-prsEdges=makeEdgeListNOCbigrams(allcat,prh[0:140],'Cat','PostRSen',shingleSize=5)
+# prsEdges=makeEdgeListNOCbigrams(allcat,prh[0:140],'Cat','PostRSen',shingleSize=5)
 
-prsEdges.to_csv('prs_edgematrix4.csv')
+# prsEdges.to_csv('prs_edgematrix4.csv')
 
-prqEdges=makeEdgeListNOCbigrams(allcat,prh[141:221],'Cat','PostRQui',shingleSize=5)
+# prqEdges=makeEdgeListNOCbigrams(allcat,prh[141:221],'Cat','PostRQui',shingleSize=5)
 
-harEdges=makeEdgeListNOCbigrams(allcat,prh[221:544],'Cat','Haruspicum',shingleSize=5)
+# harEdges=makeEdgeListNOCbigrams(allcat,prh[221:544],'Cat','Haruspicum',shingleSize=5)
 
-harEdges.to_csv('har_edgematrix4.csv')
+# harEdges.to_csv('har_edgematrix4.csv')
 
-prqEdges.to_csv('prq_edgematrix4.csv')
+# prqEdges.to_csv('prq_edgematrix4.csv')
 
-DDEdges=makeEdgeListNOCbigrams(allcat,prh[545:],'Cat ','DeDomo',shingleSize=5)
+# DDEdges=makeEdgeListNOCbigrams(allcat,prh[545:],'Cat ','DeDomo',shingleSize=5)
 
-DDEdges.to_csv('dd_edgematrix4.csv')
+# DDEdges.to_csv('dd_edgematrix4.csv')
