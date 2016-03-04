@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Dec  9 19:11:09 2015
-Fastest/best way to prettify output for Jackie's intertextuality engine
+Fastest/best way to prettify output from the intertextuality engine
 
 @author: s
 """
@@ -11,34 +11,37 @@ import requests
 import re
 import yattag
 
+#All of this stuff at the top was an effort to make sentences correspond to section numbers.
+#it worked, but isn't terrible re-usable, at least in its current form
+
 #PRSenate=bs4.BeautifulSoup(requests.get('http://www.thelatinlibrary.com/cicero/postreditum.shtml').text)
 #PrQuirites=bs4.BeautifulSoup(requests.get('http://www.thelatinlibrary.com/cicero/postreditum2.shtml').text)
 #DeDomo=bs4.BeautifulSoup(requests.get("http://www.thelatinlibrary.com/cicero/domo.shtml").text)
 #Haruspicum=bs4.BeautifulSoup(requests.get("http://www.thelatinlibrary.com/cicero/haruspicum.shtml").text)
-prs=nltk.corpus.PlaintextCorpusReader(path,'postreditum.txt', word_tokenizer=lword).raw()
-prsSect=prs.split('[')
-ff=re.compile('^\[',re.M)
-prsSect=re.split(ff,prs)
-domo=nltk.corpus.PlaintextCorpusReader(path,'domo.txt', word_tokenizer=lword).raw()
-domoSect=domo.split('. [' or '? [')
-fre=re.split(sBreak,domo)
-catSect=nltk.corpus.PlaintextCorpusReader(path,'cat3.txt', word_tokenizer=lword).raw().split('[')
-hsect=nltk.corpus.PlaintextCorpusReader(path,'haruspicum.txt', word_tokenizer=lword).raw().split('. [')
-prmatches=[(cat,[sect for sect in prsSect if mat[4:-4] in sect][0],words)
- for cat,mat,words in shinMatches if mat in str([pr.text for pr in PRSenate.find_all('p')])]
+# prs=nltk.corpus.PlaintextCorpusReader(path,'postreditum.txt', word_tokenizer=lword).raw()
+# prsSect=prs.split('[')
+# ff=re.compile('^\[',re.M)
+# prsSect=re.split(ff,prs)
+# domo=nltk.corpus.PlaintextCorpusReader(path,'domo.txt', word_tokenizer=lword).raw()
+# domoSect=domo.split('. [' or '? [')
+# fre=re.split(sBreak,domo)
+# catSect=nltk.corpus.PlaintextCorpusReader(path,'cat3.txt', word_tokenizer=lword).raw().split('[')
+# hsect=nltk.corpus.PlaintextCorpusReader(path,'haruspicum.txt', word_tokenizer=lword).raw().split('. [')
+# prmatches=[(cat,[sect for sect in prsSect if mat[4:-4] in sect][0],words)
+#  for cat,mat,words in shinMatches if mat in str([pr.text for pr in PRSenate.find_all('p')])]
 
-prqmatches=[(cat,[pr.text for pr in PrQuirites.find_all('p') if mat in pr.text][0],words)
- for cat,mat,words in shinMatches if mat in str([pr.text for pr in PrQuirites.find_all('p')])]
+# prqmatches=[(cat,[pr.text for pr in PrQuirites.find_all('p') if mat in pr.text][0],words)
+#  for cat,mat,words in shinMatches if mat in str([pr.text for pr in PrQuirites.find_all('p')])]
      
-DDmatches=[(cat,[sect for sect in domoSect if mat[4:-4] in sect][0],words)
- for cat,mat,words in shinMatches if mat in str([pr.text for pr in DeDomo.find_all('p')])]
+# DDmatches=[(cat,[sect for sect in domoSect if mat[4:-4] in sect][0],words)
+#  for cat,mat,words in shinMatches if mat in str([pr.text for pr in DeDomo.find_all('p')])]
 
-hpmatches=[(cat,[sect for sect in hsect if mat[10:-10] in sect][0],words)
- for cat,mat,words in shinMatches if mat in str([pr.text for pr in Haruspicum.find_all('p')])]
+# hpmatches=[(cat,[sect for sect in hsect if mat[10:-10] in sect][0],words)
+#  for cat,mat,words in shinMatches if mat in str([pr.text for pr in Haruspicum.find_all('p')])]
 
      
-Catil=bs4.BeautifulSoup(requests.get("http://www.thelatinlibrary.com/cicero/cat3.shtml").text)
-from yattag import Doc
+# Catil=bs4.BeautifulSoup(requests.get("http://www.thelatinlibrary.com/cicero/cat3.shtml").text)
+# from yattag import Doc
 
 #generate html files for each in order
 
