@@ -29,14 +29,16 @@ punct=[',',"'",'"',':','?','.','!',';','-','[',']','(',')']
 lstops.extend(punct)
 lstops.extend(['sum1']) #lemmatizer returns 'sum1', but STOPS_LIST has 'sum'
 lstops.extend(['edo1']) #lemmatizer labels 'est' as 'edo1'
-lstops.extend(['qui1','jam']) #two more stops that were missed
+lstops.extend(['qui1','jam']) #two more stops that are very helpful
 
 bgs=[('res','publica'),('deus','immortalis'),('ut','tam'),('ut','talis'),('ut','tantus')]
 
 acceptableTags=['-', 'A', 'C', 'D', 'E', 'M', 'N', 'P', 'R', 'T', 'V']
 
-#These are stopwords and bigrams that are useful for Cicero's political rhetoric
-#which was the original purpose of this module
+
+#These are some additional stopwords and bigrams that are useful for Cicero's
+#political rhetoric, which was the original purpose of this project
+
 
 #lstops.extend(['nihil','parvus','minus','omne','modo','tantus','qualis','civis','bonus'])
 #
@@ -124,20 +126,31 @@ class JaccardIntertextFinder:
         """
         
         shinMatches=[]
-        i=0
         for sent in cat3:
             cat3shins=MakeShingles(sent)
-            j=0
             for sen in prh:
                 prshins=MakeShingles(sen)
                 mmss=MatchShinglesNoOvercountBigrams(cat3shins,prshins,bigrams=bgs)
                 if mmss[0]==True:
                     copywords=[[w for w,t,l in sen if l in mmss[1]],[w for w,t,l in sent if l in mmss[1]]]
-                    shinMatches.append([cat3sents[i],prsents[j],copywords])
-                j+=1
-            i+=1
+                    shinMatches.append([w for w,t,l in sent],[w for w,t,l in sen],copywords])
+        return(MatcherOutput(shinMatches,name1,name2))
+        
+        
 
-
+class MatcherOutput:
+    """
+    Class for the output of Jaccard Matcher.  Collects some useful methods.
+    """
+    
+    def __init__(self, output,name1,name2):
+        self.output=output
+        self.title1=name1
+        self.title2=name2
+        self.NumberOfMatches=len(output)
+               
+    def Inspect(self):
+        
 
 
 
@@ -182,43 +195,7 @@ def MatchShinglesNoOvercountBigrams(shin1,shin2,thresh=3,bigrams=bgs):
                 intersectwords.extend(sint)
     return([match,intersectwords])
         
-#test1=set(['vir','publico','fortis'])
-#is more refactoring to do before you can turn this into a function 
-   
-#shinMatches=[]
-#i=0
-#for sent in cat3:
-#    cat3shins=MakeShingles(sent)
-#    j=0
-#    for sen in prh:
-#        prshins=MakeShingles(sen)
-#        mmss=MatchingShingles(cat3shins,prshins)
-#        if mmss[0]==True:
-#            copywords=[[w for w,t,l in sen if l in mmss[1]],[w for w,t,l in sent if l in mmss[1]]]
-#            shinMatches.append([cat3sents[i],prsents[j],copywords])
-#        j+=1
-#    i+=1
-#
-##with bigramfilter
-#bgs=[('res','publica'),('deus','immortalis'),('ut','tam'),('ut','talis'),('ut','tantus'),('neo1','tam'),('neo1','talis'),('neo1','tantus')]
-#bgs.append(('reor','publica')) #haha it lemmatizes 're' to reor
-#bgs.append(('redeo','publica'))#and 'rei' to redeo
-#bgs.extend([('reor','publicum'),('redeo','publicum')])
-#bgs.extend([('reor','publico'),('redeo','publico'),('res','publico'),('reor','publicus'),('redeo','publicus'), ('res','publicus')])
-#shinMatches=[]
-#i=0
-#for sent in cat3:
-#    cat3shins=MakeShingles(sent)
-#    j=0
-#    for sen in prh:
-#        prshins=MakeShingles(sen)
-#        mmss=MatchShinglesNoOvercountBigrams(cat3shins,prshins,bigrams=bgs)
-#        if mmss[0]==True:
-#            copywords=[[w for w,t,l in sen if l in mmss[1]],[w for w,t,l in sent if l in mmss[1]]]
-#            shinMatches.append([cat3sents[i],prsents[j],copywords])
-#        j+=1
-#    i+=1
-#
+
 
 def makeEdgeList(speech1,speech2,speech1Name='Speech1',speech2Name='Speech2'
                     shingleSize=8,threshold=3):
@@ -228,60 +205,49 @@ def makeEdgeList(speech1,speech2,speech1Name='Speech1',speech2Name='Speech2'
     words=[]
         
     for ind1,sent in enumerate(speech1):
-        s1sh=MakeShingles(sent)
+        s1sh=MakeShingles(sent,shingleSize)
         for ind2,sen in enumerate(speech2):
             s2sh=MakeShingles(sen)
-            mmss=MatchingShingles(s1sh,s2sh)
+            mmss=MatchingShingles(s1sh,s2sh,threshold)
             if mmss[0]==True:
                 S1Nodes.append(speech1Name+' '+str(ind1))
                 S2Nodes.append(speech2Name+' '+str(ind2))
                 S1.append(speech1Name)
                 S2.append(speech2Name)
                 wds=set(mmss[1])
-                words.append(str(wds).replace('[','').replace(']','').replace(',','  '))
+    edgematrix['Source']=S1Nodes
+    edgematrix['Target']=S2Nodes
+    edgematrix['WordsInCommon']=words
+    return(edgematrix)
+
+def makeEdgeListNOCbigrams(speech1,speech2,speech1Name='Speech1',speech2Name='Speech2'
+                    shingleSize=8,threshold=3, bigrams=bgs):
+    edgematrix=pd.DataFrame(columns=(['Source','Target','WordsInCommon']))
+    S1Nodes=[]
+    S2Nodes=[]
+    words=[]
+    
+    for ind1,sent in enumerate(speech1):
+        s1sh=MakeShingles(sent)
+        for ind2,sen in enumerate(speech2):
+            s2sh=MakeShingles(sen)
+            mmss=MatchShinglesNoOvercountBigrams(s1sh,s2sh, threshold,bigrams)
+            if mmss[0]==True:
+                S1Nodes.append(speech1Name+' '+str(ind1))
+                S2Nodes.append(speech2Name+' '+str(ind2))
+                S1.append(speech1Name)
+                S2.append(speech2Name)
+                wds=set(mmss[1])
+                words.append(str(wds).replace('[','').replace(']','')
+                                .replace(',','  '))
             j+=1
         i+=1
     edgematrix['Source']=S1Nodes
     edgematrix['Target']=S2Nodes
     edgematrix['WordsInCommon']=words
     return(edgematrix)
-
-def makeEdgeListNOCbigrams(speech1,speech2,speech1Name,speech2Name,bigrams=bgs,shingleSize=8,simThresh=3):
-    edgematrix=pd.DataFrame(columns=(['S1Node','S2Node','Speech1','Speech2','WordsInCommon']))
-    S1Nodes=[]
-    S2Nodes=[]
-    words=[]
-    S1=[]
-    S2=[]
-    i=0    
-    for sent in speech1:
-        s1sh=MakeShingles(sent,shingleSize)
-        j=0
-        for sen in speech2:
-            s2sh=MakeShingles(sen,shingleSize)
-            mmss=MatchShinglesNoOvercountBigrams(s1sh,s2sh, thresh=simThresh)
-            if mmss[0]==True:
-                S1Nodes.append(speech1Name+' '+str(i))
-                S2Nodes.append(speech2Name+' '+str(j))
-                S1.append(speech1Name)
-                S2.append(speech2Name)
-                wds=set(mmss[1])
-                words.append(str(wds).replace('[','').replace(']','').replace(',','  '))
-            j+=1
-        i+=1
-    edgematrix['S1Node']=S1Nodes
-    edgematrix['S2Node']=S2Nodes
-    edgematrix['Speech1']=S1
-    edgematrix['Speech2']=S2
-    edgematrix['WordsInCommon']=words
-    return(edgematrix)
     
     
-#    
-#cicer=nltk.corpus.PlaintextCorpusReader(path,'cat3.txt')
-#foo=nltk.sent_tokenize(cicer.raw())
- 
-#note to self: it might be worth it to make these return a concordance class object
    
 def stableConcordance(word,sents):
     return([sent for sent in sents if word in sent])
@@ -293,12 +259,7 @@ def partialmatchConcordance(reob,sents):
             goods.append(sent)
     return (goods)
 
-#probably best to do this recursively
-def multiMatchConcordance(words,key=words[-1],sents,distBefore=3,distAfter=3):
-    while words:
-        word=words.pop(0)
-        if word==key:
-            return
+
             
 def MatchInRangeConcordance(reob,key,sents,distBefore=3,distAfter=3):
     goods=[]
