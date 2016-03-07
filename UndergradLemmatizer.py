@@ -34,14 +34,15 @@ class UndergradBackoffLemmatizer:
         TODO: Maybe add a couple of toggles, so that we don't look up stopwords?
         """
     
-    def TagAndLemmatize(TokenizedSents):
+    def TagAndLemmatize(self,TokenizedSents):
         TaggedAndLemmatized=[]
         for sent in TokenizedSents:
-            TaggedAndLemmatized.append()
+            TaggedAndLemmatized.append(BackoffLemma([postagger.tag_unigram(w) for w in sent]))
+        return(TaggedAndLemmatized)
 
 
 
-def modifyPack(pack):
+def BackoffLemma(pack):
     """
     fix cases with no lemma or tag that should have one
     also wastes a lot of time and bandwidth checking punctuation marks
@@ -235,4 +236,10 @@ def PartTag(pal):
     
     tag='t-'+pal[1][0]+tense+'p'+voice+pal[3][0]+case+'-'
     return(tag.upper())
-    
+
+#######################
+#test
+cat3=nltk.corpus.PlaintextCorpusReader(path,'cat3.txt', word_tokenizer=lword) 
+cat3s=cat3.sents()   
+ugl=UndergradBackoffLemmatizer()
+cl=ugl.TagAndLemmatize(cat3s[3:5])
