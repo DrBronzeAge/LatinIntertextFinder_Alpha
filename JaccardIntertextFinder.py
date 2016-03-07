@@ -126,16 +126,16 @@ class JaccardIntertextFinder:
         """
         
         shinMatches=[]
-        for sent in cat3:
-            cat3shins=MakeShingles(sent)
-            for sen in prh:
-                prshins=MakeShingles(sen)
-                mmss=MatchShinglesNoOvercountBigrams(cat3shins,prshins,bigrams=bgs)
-                if mmss[0]==True:
-                    copywords=[[w for w,t,l in sen if l in mmss[1]],[w for w,t,l in sent if l in mmss[1]]]
-                    shinMatches.append([w for w,t,l in sent],[w for w,t,l in sen],copywords])
+        for t1Sent in text1:
+            text1shins=MakeShingles(t1Sent)
+            for t2Sent in text2:
+                text2shins=MakeShingles(t2Sent)
+                compared=MatchShinglesNoOvercountBigrams(text1shins,text2shins,bigrams=bgs)
+                if compared[0]==True:
+                    copywords=[[w for w,t,l in t1Sent if l in compared[1]],[w for w,t,l in t2Sent if l in compared[1]]]
+                    shinMatches.append(([w for w,t,l in t1sent],[w for w,t,l in t2sent],copywords))
         return(MatcherOutput(shinMatches,name1,name2))
-        
+      
         
 
 class MatcherOutput:
@@ -150,6 +150,8 @@ class MatcherOutput:
         self.NumberOfMatches=len(output)
                
     def Inspect(self):
+        MakeHTMLTable(self.output,self.title1,self.title2)
+    
         
 
 
@@ -197,7 +199,7 @@ def MatchShinglesNoOvercountBigrams(shin1,shin2,thresh=3,bigrams=bgs):
         
 
 
-def makeEdgeList(speech1,speech2,speech1Name='Speech1',speech2Name='Speech2'
+def makeEdgeList(speech1,speech2,speech1Name='Speech1',speech2Name='Speech2',
                     shingleSize=8,threshold=3):
     edgematrix=pd.DataFrame(columns=(['Source','Target','WordsInCommon']))
     S1Nodes=[]
@@ -220,8 +222,9 @@ def makeEdgeList(speech1,speech2,speech1Name='Speech1',speech2Name='Speech2'
     edgematrix['WordsInCommon']=words
     return(edgematrix)
 
-def makeEdgeListNOCbigrams(speech1,speech2,speech1Name='Speech1',speech2Name='Speech2'
-                    shingleSize=8,threshold=3, bigrams=bgs):
+def makeEdgeListNOCbigrams(speech1,speech2,speech1Name='Speech1',
+                    speech2Name='Speech2',shingleSize=8,threshold=3, 
+                    bigrams=bgs):
     edgematrix=pd.DataFrame(columns=(['Source','Target','WordsInCommon']))
     S1Nodes=[]
     S2Nodes=[]
@@ -240,8 +243,6 @@ def makeEdgeListNOCbigrams(speech1,speech2,speech1Name='Speech1',speech2Name='Sp
                 wds=set(mmss[1])
                 words.append(str(wds).replace('[','').replace(']','')
                                 .replace(',','  '))
-            j+=1
-        i+=1
     edgematrix['Source']=S1Nodes
     edgematrix['Target']=S2Nodes
     edgematrix['WordsInCommon']=words
@@ -280,6 +281,11 @@ def ListForHuman(sent):
 ###############################################################
 #an actual project
 ##############################################################
+jif=JaccardIntertextFinder()
+
+tested=jif.FindJaccardMatches(cat3,prh,'Third Catilinarian',
+                              'Post Reditum Speeches')
+
 # domo=nltk.corpus.PlaintextCorpusReader(path,'domo.txt')
 
 # vobis=re.compile('^tu$|^tui$|^te$|^tibi$|^vos$|^vobis|^vestr')
