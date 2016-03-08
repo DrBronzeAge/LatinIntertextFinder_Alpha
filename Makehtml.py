@@ -39,6 +39,7 @@ def MakeHTMLTable(matchList,title1='Text1',title2='Text2',
     
     doc.asis('<!DOCTYPE html>')
     with tag('html'):
+        #TODO: Add some css styling
         with tag('body'):
             with tag('h1'):
                 text('Possible Intertextualites between '+title1+' and '+title2)
@@ -64,7 +65,7 @@ def MakeHTMLTable(matchList,title1='Text1',title2='Text2',
                             sent2=match[1]
                             for word in match[2][1]:
                                 bword=re.compile(' '+word+'[ ,.?!]')
-                                foo=re.sub(bword,' <b>'+word+' </b>',sent2)
+                                sent2=re.sub(bword,' <b>'+word+' </b>',sent2)
                             doc.asis(sent2)
                         with tag('td'):
                             text(str(match[2]))

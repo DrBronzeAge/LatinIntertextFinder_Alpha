@@ -96,8 +96,7 @@ class JaccardIntertextFinder:
         
     def FindJaccardMatches(self, text1,text2,name1='Text1',name2='Text2'):
         """
-        Finds matches without controlling for common bigrams. Returns a results
-        object.
+        Finds matches without controlling for common bigrams. Returns object.
         
         Args:
         text1(list)-- The first of the two texts you would like to compare. Results
@@ -122,18 +121,79 @@ class JaccardIntertextFinder:
         
         name2(str)-- the title of text2
         
-        return()
+        return(MatcherOutput)-- a simple class with one or two useful methods
         """
         
         shinMatches=[]
         for t1Sent in text1:
-            text1shins=MakeShingles(t1Sent)
+            text1shins=MakeShingles(t1Sent,self.shingleSize)
             for t2Sent in text2:
-                text2shins=MakeShingles(t2Sent)
-                compared=MatchShinglesNoOvercountBigrams(text1shins,text2shins,bigrams=bgs)
+                text2shins=MakeShingles(t2Sent,self.shingleSize)
+                compared=MatchShinglesNoOvercountBigrams(text1shins,
+                                        text2shins,bigrams=self.bigrams,
+                                        thresh=self.matchThreshold)
+                                        
                 if compared[0]==True:
-                    copywords=[[w for w,t,l in t1Sent if l in compared[1]],[w for w,t,l in t2Sent if l in compared[1]]]
-                    shinMatches.append(([w for w,t,l in t1Sent],[w for w,t,l in t2Sent],copywords))
+                   
+                   copywords=[[w for w,t,l in t1Sent if l in compared[1]],
+                               [w for w,t,l in t2Sent if l in compared[1]]]
+                   
+                   shinMatches.append(([w for w,t,l in t1Sent],
+                                        [w for w,t,l in t2Sent],copywords))
+                    
+        return(MatcherOutput(shinMatches,name1,name2))
+        
+        
+        
+    def FindJaccardMatches_NoOvercountBigrams(self, text1,text2,
+                                              name1='Text1',name2='Text2'):
+                                                  
+        """
+        Finds matches while controlling for common bigrams (they count as only
+        one word, not two). Returns an Object
+        
+        Args:
+        text1(list)-- The first of the two texts you would like to compare. Results
+            will be ordered according to it. Logically, this should be the text
+            to which the other one refers, but results will be symmetrical.
+            text1 (and text2) must be a list of sentences, where each sentence
+            is a list of (word, tag, lemma) triples.
+            
+            This structure may seem complex to users who are new to Natural 
+            Language processing, so here is a more detailed explanation.
+            
+            Begin with something that is just a continuous block of text that
+            you would find anywhere. eg "Hi. I am Lucius."
+            Now break that into a list of sentences, like so.
+            
+            TODO: Finish this
+            
+        text2(list)-- an object similar to text1. A list of sentences, which
+            are lists of (word, tag, lemma) triples.
+            
+        name1(str)-- the title of text1
+        
+        name2(str)-- the title of text2
+        
+        return(MatcherOutput)-- a simple class with one or two useful methods
+        """
+        shinMatches=[]
+        for t1Sent in text1:
+            text1shins=MakeShingles(t1Sent,self.shingleSize)
+            for t2Sent in text2:
+                text2shins=MakeShingles(t2Sent,self.shingleSize,
+                                        thresh=self.matchThreshold)
+                compared=MatchShinglesNoOvercountBigrams(text1shins,
+                                        text2shins,bigrams=bgs)
+                                        
+                if compared[0]==True:
+                   
+                   copywords=[[w for w,t,l in t1Sent if l in compared[1]],
+                               [w for w,t,l in t2Sent if l in compared[1]]]
+                   
+                   shinMatches.append(([w for w,t,l in t1Sent],
+                                        [w for w,t,l in t2Sent],copywords))
+                    
         return(MatcherOutput(shinMatches,name1,name2))
       
         
@@ -151,6 +211,10 @@ class MatcherOutput:
         self.NumberOfMatches=len(output)
                
     def Inspect(self):
+        """
+        Makes a quick html table for easy inspection. Automatically opens in
+        your default browser.
+        """
         MakeHTMLTable(self.matching_sentences,self.title1,self.title2)
     
         
@@ -278,86 +342,3 @@ def MatchInRangeConcordance(reob,key,sents,distBefore=3,distAfter=3):
 
 def ListForHuman(sent):
     return(' '.join(w+' ' for w in sent))
-
-###############################################################
-#an actual project
-##############################################################
-#cat3=[s[0] for s in cat3]
-#prh=[p[0] for p in prh]
-jif=JaccardIntertextFinder()
-
-tested=jif.FindJaccardMatches(cat3,prh,'Third Catilinarian',
-                              'Post Reditum Speeches')
-
-# domo=nltk.corpus.PlaintextCorpusReader(path,'domo.txt')
-
-# vobis=re.compile('^tu$|^tui$|^te$|^tibi$|^vos$|^vobis|^vestr')
-# hic=re.compile('^hic$|haec|hoc|huius|hunc|hanc|huic|^hac$|^hi$|^hae$|haec|horum|harum|^hos$|^has$|^his$',re.I)
-
-# dom1=stableConcordance('etiam',domo.sents())
-# dom2=MatchInRangeConcordance(vobis,'etiam',dom1)
-# dom3=MatchInRangeConcordance(hic,vobis,dom2,4,4)
-
-# allcic=nltk.corpus.PlaintextCorpusReader(path,'.*.txt')
-
-# jupregex=re.compile('Jup|Jov|Iup|Iov')
-# jupc=partialmatchConcordance(jupregex,allcic.sents())
-    
-
-# prsEdges=makeEdgeListNOCbigrams(cat3,prh[0:140],'Cat3','PostRSen')
-
-# prsEdges.to_csv('prs_edgematrix.csv')
-
-# prqEdges=makeEdgeListNOCbigrams(cat3,prh[141:221],'Cat3','PostRQui')
-
-# harEdges=makeEdgeListNOCbigrams(cat3,prh[221:544],'Cat3','Haruspicum')
-
-# harEdges.to_csv('har_edgematrix.csv')
-
-# prqEdges.to_csv('prq_edgematrix.csv')
-
-# DDEdges=makeEdgeListNOCbigrams(cat3,prh[545:],'Cat3','DeDomo')
-
-# DDEdges.to_csv('dd_edgematrix.csv')
-
-
-
-#cleaning up the edge lists by finding more bigrams
-
-# with open('cat3Heavy.pickle','rb') as f:
-#     cat3=pickle.load(f)
-
-# with open('PostReditumHeavy.pickle','rb') as f:
-#     prh=pickle.load(f)
-
-# with open('cat124Heavy.pickle','rb') as f:
-#     cat124=pickle.load(f)
-    
-# allcat=cat124[:309]
-# allcat.extend(cat3)
-# allcat.extend(cat124[310:])
-
-# prh=[s[0] for s in prh]
-# allcat=[s[0] for s in allcat]
-
-# prsEdges=makeEdgeListNOCbigrams(allcat,prh[0:140],'Cat','PostRSen',shingleSize=5)
-
-# prsEdges.to_csv('prs_edgematrix4.csv')
-
-# prqEdges=makeEdgeListNOCbigrams(allcat,prh[141:221],'Cat','PostRQui',shingleSize=5)
-
-# harEdges=makeEdgeListNOCbigrams(allcat,prh[221:544],'Cat','Haruspicum',shingleSize=5)
-
-# harEdges.to_csv('har_edgematrix4.csv')
-
-# prqEdges.to_csv('prq_edgematrix4.csv')
-
-# DDEdges=makeEdgeListNOCbigrams(allcat,prh[545:],'Cat ','DeDomo',shingleSize=5)
-
-# DDEdges.to_csv('dd_edgematrix4.csv')
-
-
-
-
-
-
