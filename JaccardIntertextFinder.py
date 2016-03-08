@@ -133,7 +133,7 @@ class JaccardIntertextFinder:
                 compared=MatchShinglesNoOvercountBigrams(text1shins,text2shins,bigrams=bgs)
                 if compared[0]==True:
                     copywords=[[w for w,t,l in t1Sent if l in compared[1]],[w for w,t,l in t2Sent if l in compared[1]]]
-                    shinMatches.append(([w for w,t,l in t1sent],[w for w,t,l in t2sent],copywords))
+                    shinMatches.append(([w for w,t,l in t1Sent],[w for w,t,l in t2Sent],copywords))
         return(MatcherOutput(shinMatches,name1,name2))
       
         
@@ -144,13 +144,14 @@ class MatcherOutput:
     """
     
     def __init__(self, output,name1,name2):
-        self.output=output
+        self.output_raw=output
+        self.matching_sentences=[(ListForHuman(s1),ListForHuman(s2),wic) for s1,s2,wic in self.output_raw]
         self.title1=name1
         self.title2=name2
         self.NumberOfMatches=len(output)
                
     def Inspect(self):
-        MakeHTMLTable(self.output,self.title1,self.title2)
+        MakeHTMLTable(self.matching_sentences,self.title1,self.title2)
     
         
 
@@ -281,6 +282,8 @@ def ListForHuman(sent):
 ###############################################################
 #an actual project
 ##############################################################
+#cat3=[s[0] for s in cat3]
+#prh=[p[0] for p in prh]
 jif=JaccardIntertextFinder()
 
 tested=jif.FindJaccardMatches(cat3,prh,'Third Catilinarian',

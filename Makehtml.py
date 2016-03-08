@@ -10,6 +10,7 @@ Fastest/best way to prettify output from the intertextuality engine
 import re
 import yattag
 import webbrowser
+from yattag import Doc
 
 
 
@@ -51,19 +52,19 @@ def MakeHTMLTable(matchList,title1='Text1',title2='Text2',
                     with tag ('th'):
                         text('Words in Common')
                 #rows        
-                for match in output:
+                for match in matchList:
                     with tag('tr'):
                         with tag('td'):
                             sent1=match[0]
                             for word in match[2][0]: 
                                 bword=re.compile(' '+word+'[ ,.?!]')
-                                sent1=re.sub(bword,' <b>'+word+' </b>',foo)
+                                sent1=re.sub(bword,' <b>'+word+' </b>',sent1)
                             doc.asis(sent1)
                         with tag('td'):
                             sent2=match[1]
                             for word in match[2][1]:
                                 bword=re.compile(' '+word+'[ ,.?!]')
-                                foo=re.sub(bword,' <b>'+word+' </b>',foo)
+                                foo=re.sub(bword,' <b>'+word+' </b>',sent2)
                             doc.asis(sent2)
                         with tag('td'):
                             text(str(match[2]))
