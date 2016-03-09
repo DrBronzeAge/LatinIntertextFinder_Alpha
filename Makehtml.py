@@ -39,6 +39,23 @@ def MakeHTMLTable(matchList,title1='Text1',title2='Text2',
     
     doc.asis('<!DOCTYPE html>')
     with tag('html'):
+        with tag('head'):
+            with tag('title'):
+                text('Do do do Inspector Gadget (for intertexts)')
+            with tag('style'):
+                text("""
+                table {
+                    border-collapse: collapse;
+                    width: 100%;
+                }
+                
+                th, td {
+                    text-align: left;
+                    padding: 8px;
+                }
+                
+                tr:nth-child(even){background-color: #f2f2f2}
+                tr:hover{background-color:#faebd7}""")
         #TODO: Add some css styling
         with tag('body'):
             with tag('h1'):
