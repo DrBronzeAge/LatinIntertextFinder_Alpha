@@ -195,6 +195,38 @@ class JaccardIntertextFinder:
                                         [w for w,t,l in t2Sent],copywords))
                     
         return(MatcherOutput(shinMatches,name1,name2))
+        
+        
+    def MatchWithEdgeList(text1,text2,title1='Text1',title2='Text2'):
+    edgeList=[]
+    shinMatches=[]
+    
+    for t1_ind,t1_sent in enumerate(text1):
+        t1_shin=MakeShingles(t1_sent,self.shingleSize)
+        for t2_ind,t2_sent in enumerate(text2):
+            t2_shin=MakeShingles(t2_sent,self.shingleSize)
+            compared=MatchingShingles(t1_shin,t2_shin,self.matchThreshold)
+            if compared[0]==True:
+                #stuff for the edge list
+#                S1Nodes.append(title1+' '+str(t1_ind))
+#                S2Nodes.append(title2+' '+str(t2_ind))
+#                wds=set(compared[1])
+#                words.append(str(wds).replace('[','').replace(']','')
+#                                .replace(',','  '))
+                edgeList.append({'source':title1+' '+str(t1_ind), 
+                                 'target':title2+' '+str(t2_ind), 
+                                 'words': set(compared[1])})
+                #stuff for the default data structure
+                copywords=[[w for w,t,l in t1Sent if l in compared[1]],
+                               [w for w,t,l in t2Sent if l in compared[1]]]
+                   
+                shinMatches.append(([w for w,t,l in t1Sent],
+                                        [w for w,t,l in t2Sent],copywords))
+                
+#    edgematrix['Source']=S1Nodes
+#    edgematrix['Target']=S2Nodes
+#    edgematrix['WordsInCommon']=words
+    return(MatcherOutput(shinMatches, title1,title1,edgeList) ) 
       
         
 
@@ -203,12 +235,13 @@ class MatcherOutput:
     Class for the output of Jaccard Matcher.  Collects some useful methods.
     """
     
-    def __init__(self, output,name1,name2):
+    def __init__(self, output,name1,name2,edgematrix):
         self.output_raw=output
         self.matching_sentences=[(ListForHuman(s1),ListForHuman(s2),wic) for s1,s2,wic in self.output_raw]
         self.title1=name1
         self.title2=name2
         self.NumberOfMatches=len(output)
+        self.edgeList=edgematrix
                
     def Inspect(self):
         """
@@ -217,6 +250,13 @@ class MatcherOutput:
         """
         MakeHTMLTable(self.matching_sentences,self.title1,self.title2)
     
+    def Visualize(self):
+        """
+        Makes a quick hive plot of intertexts for ease of understanding. 
+        Automatically opens in your default browser.
+        """
+        ddd_dat={}
+        for 
         
 
 
@@ -282,6 +322,8 @@ def makeEdgeList(speech1,speech2,speech1Name='Speech1',speech2Name='Speech2',
                 S1.append(speech1Name)
                 S2.append(speech2Name)
                 wds=set(mmss[1])
+                words.append(str(wds).replace('[','').replace(']','')
+                                .replace(',','  '))
     edgematrix['Source']=S1Nodes
     edgematrix['Target']=S2Nodes
     edgematrix['WordsInCommon']=words

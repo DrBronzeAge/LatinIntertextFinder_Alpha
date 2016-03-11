@@ -91,5 +91,19 @@ def MakeHTMLTable(matchList,title1='Text1',title2='Text2',
     with open (pathPlusName,'w') as f:
         f.write(a)
     webbrowser.open(pathPlusName)
+    
+    
+def MakeHTMLHivePlot():
+    doc, tag, text = Doc().tagtext()
+    
+    doc.asis('<!DOCTYPE html>')
+    with tag('html'):
+        with open ('C:/Users/s/Documents/GitHub/d3BMCR/HiveTemplate1.html','r') as scpt:
+            doc.asis(scpt.read())
+    a=doc.getvalue()
+    with open (pathPlusName,'w') as f:
+        f.write(a)
+    webbrowser.open(pathPlusName)
+    
 
-
+del a
