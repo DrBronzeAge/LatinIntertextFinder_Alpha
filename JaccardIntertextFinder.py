@@ -126,9 +126,11 @@ class JaccardIntertextFinder:
         
         shinMatches=[]
         for t1Sent in text1:
-            text1shins=MakeShingles(t1Sent,self.shingleSize)
+            text1shins=MakeShingles(t1Sent,self.shingleSize,goodTags=self.goodTags,
+                                    stops=self.stops)
             for t2Sent in text2:
-                text2shins=MakeShingles(t2Sent,self.shingleSize)
+                text2shins=MakeShingles(t2Sent,self.shingleSize,
+                                        goodTags=self.goodTags,stops=self.stops)
                 compared=MatchShinglesNoOvercountBigrams(text1shins,
                                         text2shins,bigrams=self.bigrams,
                                         thresh=self.matchThreshold)
@@ -179,12 +181,14 @@ class JaccardIntertextFinder:
         """
         shinMatches=[]
         for t1Sent in text1:
-            text1shins=MakeShingles(t1Sent,self.shingleSize)
+            text1shins=MakeShingles(t1Sent,self.shingleSize,goodTags=self.goodTags,
+                                    stops=self.stops)
             for t2Sent in text2:
                 text2shins=MakeShingles(t2Sent,self.shingleSize,
-                                        thresh=self.matchThreshold)
+                                        goodTags=self.goodTags,stops=self.stops)
                 compared=MatchShinglesNoOvercountBigrams(text1shins,
-                                        text2shins,bigrams=bgs)
+                                        text2shins,bigrams=bgs,
+                                        thresh=self.matchThreshold)
                                         
                 if compared[0]==True:
                    
@@ -197,37 +201,39 @@ class JaccardIntertextFinder:
         return(MatcherOutput(shinMatches,name1,name2))
         
         
-    def MatchWithEdgeList(text1,text2,title1='Text1',title2='Text2'):
-    edgeList=[]
-    shinMatches=[]
-    
-    for t1_ind,t1_sent in enumerate(text1):
-        t1_shin=MakeShingles(t1_sent,self.shingleSize)
-        for t2_ind,t2_sent in enumerate(text2):
-            t2_shin=MakeShingles(t2_sent,self.shingleSize)
-            compared=MatchingShingles(t1_shin,t2_shin,self.matchThreshold)
-            if compared[0]==True:
-                #stuff for the edge list
-#                S1Nodes.append(title1+' '+str(t1_ind))
-#                S2Nodes.append(title2+' '+str(t2_ind))
-#                wds=set(compared[1])
-#                words.append(str(wds).replace('[','').replace(']','')
-#                                .replace(',','  '))
-                edgeList.append({'source':title1+' '+str(t1_ind), 
-                                 'target':title2+' '+str(t2_ind), 
-                                 'words': set(compared[1])})
-                #stuff for the default data structure
-                copywords=[[w for w,t,l in t1Sent if l in compared[1]],
-                               [w for w,t,l in t2Sent if l in compared[1]]]
-                   
-                shinMatches.append(([w for w,t,l in t1Sent],
-                                        [w for w,t,l in t2Sent],copywords))
-                
-#    edgematrix['Source']=S1Nodes
-#    edgematrix['Target']=S2Nodes
-#    edgematrix['WordsInCommon']=words
-    return(MatcherOutput(shinMatches, title1,title1,edgeList) ) 
-      
+    def MatchWithEdgeList(self,text1,text2,title1='Text1',title2='Text2'):
+        edgeList=[]
+        shinMatches=[]
+        
+        for t1_ind,t1_sent in enumerate(text1):
+            t1_shin=MakeShingles(t1_sent,self.shingleSize,goodTags=self.goodTags,
+                                    stops=self.stops)
+            for t2_ind,t2_sent in enumerate(text2):
+                t2_shin=MakeShingles(t2_sent,self.shingleSize,
+                                     goodTags=self.goodTags,stops=self.stops)
+                compared=MatchingShingles(t1_shin,t2_shin,self.matchThreshold)
+                if compared[0]==True:
+                    #stuff for the edge list
+    #                S1Nodes.append(title1+' '+str(t1_ind))
+    #                S2Nodes.append(title2+' '+str(t2_ind))
+    #                wds=set(compared[1])
+    #                words.append(str(wds).replace('[','').replace(']','')
+    #                                .replace(',','  '))
+                    edgeList.append({'source':title1+' '+str(t1_ind), 
+                                     'target':title2+' '+str(t2_ind), 
+                                     'words': set(compared[1])})
+                    #stuff for the default data structure
+                    copywords=[[w for w,t,l in t1_sent if l in compared[1]],
+                                   [w for w,t,l in t2_sent if l in compared[1]]]
+                       
+                    shinMatches.append(([w for w,t,l in t1_sent],
+                                            [w for w,t,l in t2_sent],copywords))
+                    
+    #    edgematrix['Source']=S1Nodes
+    #    edgematrix['Target']=S2Nodes
+    #    edgematrix['WordsInCommon']=words
+        return(MatcherOutput(shinMatches, title1,title2,edgeList) ) 
+          
         
 
 class MatcherOutput:
@@ -235,7 +241,7 @@ class MatcherOutput:
     Class for the output of Jaccard Matcher.  Collects some useful methods.
     """
     
-    def __init__(self, output,name1,name2,edgematrix):
+    def __init__(self, output,name1,name2,edgematrix=[]):
         self.output_raw=output
         self.matching_sentences=[(ListForHuman(s1),ListForHuman(s2),wic) for s1,s2,wic in self.output_raw]
         self.title1=name1
@@ -250,16 +256,55 @@ class MatcherOutput:
         """
         MakeHTMLTable(self.matching_sentences,self.title1,self.title2)
     
-    def Visualize(self):
-        """
-        Makes a quick hive plot of intertexts for ease of understanding. 
-        Automatically opens in your default browser.
-        """
-        ddd_dat={}
-        for 
+#    def Visualize(self):
+#        """
+#        Makes a quick hive plot of intertexts for ease of understanding. 
+#        Automatically opens in your default browser.
+#        """
+#        ddd_dat={}
+#        for 
         
 
 
+def TermDocumentMatrix (docs,selector='word',docnames=None, stops=None):
+    """
+    
+    Function to create a Term-Document Matrix with a single call, since
+    neither the nltk nor the cltk comes with one built in. 
+    
+    Arguments:
+    
+    
+    """
+    if selector=='word':
+        sel=0
+    elif selector=='lemma':
+        sel=2
+    else:
+        raise ValueError("I do not recognize that selector; use 'word' or 'lemma' ")
+    
+    if not docnames:
+        docnames=['Doc'+str(i+1) for i in range(0,len(docs))]
+
+    TDM=pd.DataFrame(columns=['term'].extend(docnames))
+    fdl=[]
+    for doc in docs:
+        dw=[]
+        for sent in doc:
+            if stops:
+                dw.extend(w[sel] for w in sent if w[sel] not in stops)
+            else:
+                dw.extend(w[sel] for w in sent)
+        fdl.append(nltk.FreqDist(dw))
+    
+    words=[]
+    for fd in fdl:
+        words.extend(fd.keys())
+    words=set(words)
+    TDM['term']=list(words)
+    for k,v in enumerate(docnames):
+        TDM[docnames[k]]=[fdl[k][w] for w in words]
+    return(TDM)
 
 
 
@@ -384,3 +429,5 @@ def MatchInRangeConcordance(reob,key,sents,distBefore=3,distAfter=3):
 
 def ListForHuman(sent):
     return(' '.join(w+' ' for w in sent))
+    
+

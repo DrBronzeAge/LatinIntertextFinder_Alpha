@@ -106,4 +106,3 @@ def MakeHTMLHivePlot():
     webbrowser.open(pathPlusName)
     
 
-del a

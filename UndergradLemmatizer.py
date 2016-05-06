@@ -47,12 +47,19 @@ def BackoffLemma(pack):
     fix cases with no lemma or tag that should have one
     also wastes a lot of time and bandwidth checking punctuation marks
     Soo... apparently perseus considers 'amantissimos' a verb? That's annoying
+    
+    TODO: this returns a tuple that is unnecessarily embedded in a list. eg:
+    [ [['vos','P-----','tu' ]], [['est','v------','sum1']] ]
+    rather than:
+    [ ['vos','P-----','tu'], ['est','v------','sum1'] ]
     """
     modpack=[]
     for sent in pack:
         tups=[]
         for tup in sent:
-            if tup[1]==None:
+            if tup[0] in punct:
+                tups.append([tup[0],None,None])
+            elif tup[1]==None:
                 stuff=GetFromPerseus(tup[0])
                 tups.append([tup[0],MakePerseusTag(stuff[1]), stuff[0]])
             else:
